@@ -1,19 +1,20 @@
 #####################################################################################################################
-## Tik Camera Overscan - Python Script
-## Title: TIK Camera Overscan
+## Tik Path Motion - Python Script
+## Title: TIK Path Motion
 ## AUTHOR:	Arda Kutlu
 ## e-mail: ardakutlu@gmail.com
 ## Web: http://www.ardakutlu.com
 ## VERSION:1.0(Initial)
-## CREATION DATE: 27.09.2017
-## LAST MODIFIED DATE: 27.09.2017
+## CREATION DATE: 05.04.2018
+## LAST MODIFIED DATE: 05.04.2018
 ##
-## DESCRIPTION: A simple tool to overscan the camera render area. Works with vray phsical Camera as well
+## DESCRIPTION: A utility tool to attach multiple objects to a path with equal distance.
 ## INSTALL:
 ## Copy tik_cameraOverScan.py to user/maya/scripts folder
 ## Run these commands in python tab (or put them in a shelf:
-## import tik_cameraOverscan
-## tik_cameraOverscan.cameraOverscan().show()
+## import tik_pathMotion
+## tik_pathMotion.pathMotion().show()
+## TODO: Right now the objects are distributed with the selection order. Random distribution will be added
 
 #####################################################################################################################
 

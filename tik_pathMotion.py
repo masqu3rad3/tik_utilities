@@ -14,6 +14,8 @@
 ## Run these commands in python tab (or put them in a shelf:
 ## import tik_pathMotion
 ## tik_pathMotion.pathMotion().show()
+## Known Issues:
+    # Undo is not working due to a bug with python wrapping of path animation command
 ## TODO: Right now the objects are distributed with the selection order. Random distribution will be added
 
 #####################################################################################################################
@@ -314,7 +316,7 @@ class pathMotion(QtWidgets.QDialog):
         if not pm.attributeQuery(self.controllerAttribute, node=self.masterController, exists=True):
             pm.addAttr(shortName=self.controllerAttribute, longName=self.controllerAttribute, defaultValue=0,
                        at="float", k=True)
-        pm.undoInfo(openChunk=True)
+
         for path in self.pathCurveList:
 
             for iter in range(0, self.count ):
@@ -329,22 +331,6 @@ class pathMotion(QtWidgets.QDialog):
                 dup = pm.duplicate(self.objectList[dupObjIndex])
                 alignTo(dup, locator, mode=2)
                 pm.parent(dup, locator)
-
-        pm.undoInfo(closeChunk=True)
-    # def motionator(self, masterController, objList, curve, totalRange, driverAttr, name="def"):
-    #     for iter in range(1, totalRange + 1):
-    #         locator = pm.spaceLocator(name="%s_%s" % (name, iter))
-    #         r = pm.pathAnimation(locator, stu=iter, etu=totalRange + iter, follow=True, c=curve)
-    #         rRel = pm.listConnections(r, t="animCurveTL")[0]
-    #         pm.setAttr(rRel.postInfinity, 3)
-    #         pm.connectAttr("%s.%s" % (masterController, driverAttr), rRel.input)
-    #         # "%s.%s" %(masterController, driverAttr) >> rRel.input
-    #
-    #         dupObjIndex = iter % (len(objList) + 1)
-    #         dup = pm.duplicate(objList[dupObjIndex - 1])
-    #         extra.alignTo(dup, locator, mode=2)
-    #         pm.parent(dup, locator)
-
 
 
     def infoPop(self, textTitle="info", textHeader="", textInfo="", type="I"):

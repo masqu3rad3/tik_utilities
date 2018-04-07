@@ -311,10 +311,10 @@ class pathMotion(QtWidgets.QDialog):
         self.preInfinity = self.infinityDict[self.preinfinity_comboBox.currentText()]
         self.postInfinity = self.infinityDict[self.postinfinity_comboBox.currentText()]
 
-
+        print self.controllerAttribute
         ## add the attribute if it is not already present
         if not pm.attributeQuery(self.controllerAttribute, node=self.masterController, exists=True):
-            pm.addAttr(shortName=self.controllerAttribute, longName=self.controllerAttribute, defaultValue=0,
+            pm.addAttr(self.masterController, shortName=self.controllerAttribute, longName=self.controllerAttribute, defaultValue=0,
                        at="float", k=True)
 
         for path in self.pathCurveList:

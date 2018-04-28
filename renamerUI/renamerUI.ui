@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>270</width>
+    <height>341</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -37,7 +37,7 @@
      <x>20</x>
      <y>50</y>
      <width>231</width>
-     <height>23</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -152,7 +152,7 @@
      <x>20</x>
      <y>90</y>
      <width>231</width>
-     <height>23</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -180,7 +180,7 @@
      <x>20</x>
      <y>130</y>
      <width>91</width>
-     <height>23</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -208,7 +208,7 @@
      <x>160</x>
      <y>130</y>
      <width>91</width>
-     <height>23</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -236,7 +236,7 @@
      <x>180</x>
      <y>170</y>
      <width>71</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -264,7 +264,7 @@
      <x>20</x>
      <y>170</y>
      <width>151</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -285,17 +285,20 @@
    <property name="text">
     <string notr="true"/>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
    <property name="placeholderText">
-    <string notr="true"/>
+    <string notr="true">Object_Name_&lt;suffix&gt;</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="addsuffix_lineEdit_2">
+  <widget class="QLineEdit" name="addprefix_lineEdit">
    <property name="geometry">
     <rect>
      <x>100</x>
      <y>210</y>
      <width>151</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -316,8 +319,11 @@
    <property name="text">
     <string notr="true"/>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
    <property name="placeholderText">
-    <string notr="true"/>
+    <string notr="true">&lt;prefix&gt;_Object_Name</string>
    </property>
   </widget>
   <widget class="QPushButton" name="addprefix_pushButton">
@@ -326,7 +332,7 @@
      <x>20</x>
      <y>210</y>
      <width>71</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -348,13 +354,13 @@
     <string notr="true">Add Prefix</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="addprefix_pushButton_2">
+  <widget class="QPushButton" name="rename_pushButton">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>250</y>
      <width>71</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -374,6 +380,136 @@
    </property>
    <property name="text">
     <string notr="true">Rename</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="rename_lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>250</y>
+     <width>151</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string notr="true"/>
+   </property>
+   <property name="statusTip">
+    <string notr="true"/>
+   </property>
+   <property name="whatsThis">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleName">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleDescription">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string notr="true"/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="placeholderText">
+    <string notr="true">new_object_name_####</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="replace_a_lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>290</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string notr="true"/>
+   </property>
+   <property name="statusTip">
+    <string notr="true"/>
+   </property>
+   <property name="whatsThis">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleName">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleDescription">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string notr="true"/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="placeholderText">
+    <string notr="true">A</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="replace_pushButton">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>290</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string notr="true"/>
+   </property>
+   <property name="statusTip">
+    <string notr="true"/>
+   </property>
+   <property name="whatsThis">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleName">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleDescription">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string notr="true">Replace</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="replace_b_lineEdit">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>290</y>
+     <width>71</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string notr="true"/>
+   </property>
+   <property name="statusTip">
+    <string notr="true"/>
+   </property>
+   <property name="whatsThis">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleName">
+    <string notr="true"/>
+   </property>
+   <property name="accessibleDescription">
+    <string notr="true"/>
+   </property>
+   <property name="text">
+    <string notr="true"/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+   <property name="placeholderText">
+    <string notr="true">B</string>
    </property>
   </widget>
  </widget>

@@ -1,3 +1,5 @@
+#
+# Renamer version 1.0
 
 import pymel.core as pm
 
@@ -155,10 +157,11 @@ class RenamerUI(QtWidgets.QDialog):
         self.setWindowTitle(windowName)
         self.setObjectName(windowName)
         self.buildUI()
+        self.renamer = Renamer()
     
     def buildUI(self):
 
-        self.setObjectName(("namingtools_Dialog"))
+        self.setObjectName((windowName))
         self.resize(270, 341)
         self.setToolTip((""))
         self.setStatusTip((""))
@@ -339,7 +342,40 @@ class RenamerUI(QtWidgets.QDialog):
         self.replace_b_lineEdit.setPlaceholderText(("B"))
         self.replace_b_lineEdit.setObjectName(("replace_b_lineEdit"))
 
+        self.removepasted_pushButton.clicked.connect(lambda: self.buttonPressed("removePasted"))
+        self.removesemi_pushButton.clicked.connect(lambda: self.buttonPressed("removeSemi"))
+        self.addleft_pushButton.clicked.connect(lambda: self.buttonPressed("addLeft"))
+        self.addright_pushButton.clicked.connect(lambda: self.buttonPressed("addRight"))
+        self.addsuffix_pushButton.clicked.connect(lambda: self.buttonPressed("addSuffix"))
+        self.addprefix_pushButton.clicked.connect(lambda: self.buttonPressed("addPrefix"))
+        self.rename_pushButton.clicked.connect(lambda: self.buttonPressed("rename"))
+        self.replace_pushButton.clicked.connect(lambda: self.buttonPressed("replace"))
+
         # QtCore.QMetaObject.connectSlotsByName(namingtools_Dialog)
+    def buttonPressed(self, command):
+        if self.selected_radioButton.isChecked():
+            method=0
+        elif self.selected_radioButton_2.isChecked():
+            method=1
+        elif self.selected_radioButton_3.isChecked():
+            method=2
+
+        if command == "removePasted":
+            self.renamer.removePasted(method)
+        elif command == "removeSemi":
+            self.renamer.removeSemi(method)
+        elif command == "addRight":
+            self.renamer.addRight(method)
+        elif command == "addLeft":
+            self.renamer.addLeft(method)
+        elif command == "addSuffix":
+            self.renamer.addSuffix(method, self.addsuffix_lineEdit.text())
+        elif command == "addPrefix":
+            self.renamer.addPrefix(method, self.addprefix_lineEdit.text())
+        elif command == "rename":
+            self.renamer.rename(method, self.rename_lineEdit.text())
+        elif command == "replace":
+            self.renamer.replace(method, self.replace_a_lineEdit.text(), self.replace_b_lineEdit.text())
 
     def testPop(self):
         exportWindow, ok = QtWidgets.QInputDialog.getItem(self, 'Text Input Dialog',

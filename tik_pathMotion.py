@@ -70,7 +70,7 @@ def getMayaMainWindow():
     return ptr
 
 
-class pathMotion(QtWidgets.QDialog):
+class PathMotion(QtWidgets.QDialog):
 
 
     def __init__(self):
@@ -78,7 +78,7 @@ class pathMotion(QtWidgets.QDialog):
             if entry.objectName() == "pathmotion_Dialog":
                 entry.close()
         parent = getMayaMainWindow()
-        super(pathMotion, self).__init__(parent=parent)
+        super(PathMotion, self).__init__(parent=parent)
 
         self.setObjectName(("pathmotion_Dialog"))
         self.resize(337, 363)

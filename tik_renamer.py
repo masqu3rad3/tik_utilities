@@ -73,7 +73,7 @@ class Renamer(object):
         self.getObjects(selectMethod) # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename(i.name().replace("_pasted", ""))
+                i.rename(i.name().replace("pasted__", ""))
             except RuntimeError:
                 pass
 

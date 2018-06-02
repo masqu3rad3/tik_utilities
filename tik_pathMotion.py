@@ -75,8 +75,12 @@ class PathMotion(QtWidgets.QDialog):
 
     def __init__(self):
         for entry in QtWidgets.QApplication.allWidgets():
-            if entry.objectName() == "pathmotion_Dialog":
-                entry.close()
+            try:
+                if entry.objectName() == "pathmotion_Dialog":
+                    entry.close()
+            except AttributeError:
+                pass
+
         parent = getMayaMainWindow()
         super(PathMotion, self).__init__(parent=parent)
 

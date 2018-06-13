@@ -66,7 +66,7 @@ class Renamer(object):
                 self.objectList += (pm.listRelatives(obj, ad=True, c=True))
             self.objectList = uniqueList(self.objectList)
         if method == 2: # Everything
-            self.objectList = pm.ls("*")
+            self.objectList = pm.ls()
 
 
     def removePasted(self, selectMethod):
@@ -125,8 +125,6 @@ class Renamer(object):
         split = newName.split("#")
         newName = split[0]
         padding = abs(len(split)-1)
-        print "name", newName
-        print "padding", padding
 
         counter = 1
         for i in self.objectList:
@@ -356,48 +354,49 @@ class RenamerUI(QtWidgets.QDialog):
 
         # QtCore.QMetaObject.connectSlotsByName(namingtools_Dialog)
     def buttonPressed(self, command):
-        if self.selected_radioButton.isChecked():
-            method=0
-        elif self.selected_radioButton_2.isChecked():
-            method=1
-        elif self.selected_radioButton_3.isChecked():
-            method=2
+        with pm.UndoChunk():
+            if self.selected_radioButton.isChecked():
+                method=0
+            elif self.selected_radioButton_2.isChecked():
+                method=1
+            elif self.selected_radioButton_3.isChecked():
+                method=2
 
-        if command == "removePasted":
-            self.renamer.removePasted(method)
-        elif command == "removeSemi":
-            self.renamer.removeSemi(method)
-        elif command == "addRight":
-            self.renamer.addRight(method)
-        elif command == "addLeft":
-            self.renamer.addLeft(method)
-        elif command == "addSuffix":
-            self.renamer.addSuffix(method, self.addsuffix_lineEdit.text())
-        elif command == "addPrefix":
-            self.renamer.addPrefix(method, self.addprefix_lineEdit.text())
-        elif command == "rename":
-            self.renamer.rename(method, self.rename_lineEdit.text())
-        elif command == "replace":
-            self.renamer.replace(method, self.replace_a_lineEdit.text(), self.replace_b_lineEdit.text())
+            if command == "removePasted":
+                self.renamer.removePasted(method)
+            elif command == "removeSemi":
+                self.renamer.removeSemi(method)
+            elif command == "addRight":
+                self.renamer.addRight(method)
+            elif command == "addLeft":
+                self.renamer.addLeft(method)
+            elif command == "addSuffix":
+                self.renamer.addSuffix(method, self.addsuffix_lineEdit.text())
+            elif command == "addPrefix":
+                self.renamer.addPrefix(method, self.addprefix_lineEdit.text())
+            elif command == "rename":
+                self.renamer.rename(method, self.rename_lineEdit.text())
+            elif command == "replace":
+                self.renamer.replace(method, self.replace_a_lineEdit.text(), self.replace_b_lineEdit.text())
 
-    def testPop(self):
-        exportWindow, ok = QtWidgets.QInputDialog.getItem(self, 'Text Input Dialog',
-                                                          'SAVE BEFORE PROCEED\n\nANY UNSAVED WORK WILL BE LOST\n\nEnter Asset Name:')
-        if ok:
-            print "popped"
-
-    def setColor(self):
-        color = QtWidgets.QColorDialog.getColor(QtCore.Qt.green, self)
-        if color.isValid():
-            print(color.name())
-            print(QtGui.QPalette(color))
-            print color
-
-    def wheelEvent(self, event):
-        # print event.delta()
-        t =(math.pow(1.2, event.delta() / 120.0))
-        if event.modifiers() == QtCore.Qt.ControlModifier:
-            print t
+    # def testPop(self):
+    #     exportWindow, ok = QtWidgets.QInputDialog.getItem(self, 'Text Input Dialog',
+    #                                                       'SAVE BEFORE PROCEED\n\nANY UNSAVED WORK WILL BE LOST\n\nEnter Asset Name:')
+    #     if ok:
+    #         print "popped"
+    #
+    # def setColor(self):
+    #     color = QtWidgets.QColorDialog.getColor(QtCore.Qt.green, self)
+    #     if color.isValid():
+    #         print(color.name())
+    #         print(QtGui.QPalette(color))
+    #         print color
+    #
+    # def wheelEvent(self, event):
+    #     # print event.delta()
+    #     t =(math.pow(1.2, event.delta() / 120.0))
+    #     if event.modifiers() == QtCore.Qt.ControlModifier:
+    #         print t
 
 
 # testUI().show()

@@ -1,4 +1,6 @@
 import pymel.core as pm
+import maya.mel as mel
+
 
 import Qt
 from Qt import QtWidgets, QtCore, QtGui
@@ -76,42 +78,32 @@ def resetControllers(selectionOnly=True):
     #     except RuntimeError:
     #         pass
 
-def lipSynch(word, seperation=2):
+def lipSynch(word, seperation=2, useSelectedRange=True):
+    # check if any area highlighted on the timeline
+    if useSelectedRange:
+        aTimeSlider = mel.eval('$tmpVar=$gPlayBackSlider')
+        timeRange = pm.timeControl(aTimeSlider, q=True, rangeArray=True)
+        duration = timeRange[1] - timeRange[0]
+        if duration < 2:
+            pm.warning("No range selected, using the cursor point and default seperation value")
+            # useSelectedRange = False
+            startFrame = timeRange[0]
+        elif len(word) > duration:
+            pm.warning("Selected Range is too small for entered text, select a larger area or use 'start from cursor position' option")
+            return
+        else:
+            ## range calculation
+            startFrame = timeRange[0]
+            seperation = duration/len(word)
+    else:
+        startFrame = pm.currentTime()
+
+
 
     controllers = getControllers(mode="phonemes")
     if not controllers:
         pm.warning("select only the 'cont_facial' controller")
         return
-    # phenomeDict = {"a": controllers[0],
-    #                "b": controllers[2],
-    #                "c": controllers[5],
-    #                "C": controllers[5],
-    #                "d": controllers[6],
-    #                "e": controllers[4],
-    #                "f": controllers[3],
-    #                "g": controllers[5],
-    #                "G": "repeat",
-    #                "h": controllers[0],
-    #                "I": controllers[0],
-    #                "i": controllers[5],
-    #                "j": controllers[9],
-    #                "k": controllers[5],
-    #                "l": controllers[7],
-    #                "m": controllers[2],
-    #                "n": controllers[6],
-    #                "o": controllers[1],
-    #                "O": controllers[1],
-    #                "p": controllers[2],
-    #                "r": controllers[3],
-    #                "s": controllers[8],
-    #                "S": controllers[9],
-    #                "t": controllers[9],
-    #                "u": controllers[1],
-    #                "U": controllers[1],
-    #                "v": controllers[3],
-    #                "y": controllers[5],
-    #                "z": controllers[8],
-    #                " ": "default", }
     phenomeDict = {"a": controllers[0],
                    "b": controllers[6],
                    "c": controllers[9],
@@ -142,7 +134,7 @@ def lipSynch(word, seperation=2):
                    "y": controllers[9],
                    "z": controllers[8],
                    " ": "default", }
-    startFrame = pm.currentTime()
+
     for i in range(len(word)):
 
         targetFrame = startFrame + ((i + 1) * seperation)
@@ -196,7 +188,7 @@ class MainUI(QtWidgets.QDialog):
     def buildUI(self):
 
         self.lipsync_groupBox = QtWidgets.QGroupBox(self)
-        self.lipsync_groupBox.setGeometry(QtCore.QRect(20, 20, 231, 121))
+        self.lipsync_groupBox.setGeometry(QtCore.QRect(20, 20, 231, 135))
         self.lipsync_groupBox.setTitle(("LipSync"))
         self.lipsync_groupBox.setObjectName(("lipsync_groupBox"))
 
@@ -209,7 +201,7 @@ class MainUI(QtWidgets.QDialog):
         self.seperation_spinBox = QtWidgets.QSpinBox(self.lipsync_groupBox)
         self.seperation_spinBox.setGeometry(QtCore.QRect(80, 59, 42, 22))
         self.seperation_spinBox.setMinimum(1)
-        self.seperation_spinBox.setProperty("value", 3)
+        self.seperation_spinBox.setProperty("value", 2)
         self.seperation_spinBox.setObjectName(("seperation_spinBox"))
 
         self.liptext_lineEdit = QtWidgets.QLineEdit(self.lipsync_groupBox)
@@ -222,19 +214,38 @@ class MainUI(QtWidgets.QDialog):
         self.lipsync_pushButton.setGeometry(QtCore.QRect(140, 60, 81, 21))
         self.lipsync_pushButton.setText(("LipSync"))
         self.lipsync_pushButton.setObjectName(("lipsync_pushButton"))
+        self.lipsync_pushButton.setFocus()
 
-        self.disclaimer_label = QtWidgets.QLabel(self.lipsync_groupBox)
-        self.disclaimer_label.setGeometry(QtCore.QRect(0, 90, 231, 20))
-        font = QtGui.QFont()
-        font.setItalic(True)
-        self.disclaimer_label.setFont(font)
-        self.disclaimer_label.setText(("* cursor position is the starting point"))
-        self.disclaimer_label.setTextFormat(QtCore.Qt.RichText)
-        self.disclaimer_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.disclaimer_label.setObjectName(("disclaimer_label"))
+        POSradioGrp = QtWidgets.QButtonGroup(self.lipsync_groupBox)
+        self.useCursorPosition_RB= QtWidgets.QRadioButton("Start From Cursor Position", parent=self.lipsync_groupBox)
+        self.useCursorPosition_RB.setGeometry(QtCore.QRect(12, 90, 231, 20))
+        self.useSelectionHiglight_RB= QtWidgets.QRadioButton("Use Selection Highlight", parent=self.lipsync_groupBox)
+        self.useSelectionHiglight_RB.setGeometry(QtCore.QRect(12, 110, 231, 20))
+
+        POSradioGrp.addButton(self.useCursorPosition_RB)
+        POSradioGrp.addButton(self.useSelectionHiglight_RB)
+        self.useSelectionHiglight_RB.setChecked(True)
+
+        # MPradioColumn = QtWidgets.QVBoxLayout()
+        # MPradioColumn.setAlignment(QtCore.Qt.AlignLeft)
+        # MPLayout.addLayout(MPradioColumn)
+
+        # MPLayout.addWidget(self.MPLeftToRight)
+        # MPLayout.addWidget(self.MPRightToLeft)
+
+
+        # self.disclaimer_label = QtWidgets.QLabel(self.lipsync_groupBox)
+        # self.disclaimer_label.setGeometry(QtCore.QRect(0, 90, 231, 20))
+        # font = QtGui.QFont()
+        # font.setItalic(True)
+        # self.disclaimer_label.setFont(font)
+        # self.disclaimer_label.setText(("* cursor position is the starting point"))
+        # self.disclaimer_label.setTextFormat(QtCore.Qt.RichText)
+        # self.disclaimer_label.setAlignment(QtCore.Qt.AlignCenter)
+        # self.disclaimer_label.setObjectName(("disclaimer_label"))
 
         self.cont_selection_groupBox = QtWidgets.QGroupBox(self)
-        self.cont_selection_groupBox.setGeometry(QtCore.QRect(20, 160, 231, 81))
+        self.cont_selection_groupBox.setGeometry(QtCore.QRect(20, 170, 231, 81))
         self.cont_selection_groupBox.setTitle(("Controller Selection"))
         self.cont_selection_groupBox.setObjectName(("cont_selection_groupBox"))
 
@@ -259,7 +270,7 @@ class MainUI(QtWidgets.QDialog):
         self.selectextras_pushButton.setText(("Select Extras"))
 
         self.cont_reset_groupBox = QtWidgets.QGroupBox(self)
-        self.cont_reset_groupBox.setGeometry(QtCore.QRect(20, 260, 231, 61))
+        self.cont_reset_groupBox.setGeometry(QtCore.QRect(20, 265, 231, 61))
         self.cont_reset_groupBox.setTitle(("Controller Reset"))
         self.cont_reset_groupBox.setObjectName(("cont_reset_groupBox"))
 
@@ -275,6 +286,8 @@ class MainUI(QtWidgets.QDialog):
 
         self.lipsync_pushButton.clicked.connect(self.onLipSynchPressed)
         self.liptext_lineEdit.textChanged.connect(self.checkValidity)
+        self.useSelectionHiglight_RB.toggled.connect(self.onUseStateChange)
+        self.useCursorPosition_RB.toggled.connect(self.onUseStateChange)
         self.selectphonemes_pushButton.clicked.connect(self.onSelectPhonemesPressed)
         self.selectall_pushButton.clicked.connect(self.onSelectAllPressed)
         self.selectextras_pushButton.clicked.connect(self.onSelectExtrasPressed)
@@ -282,7 +295,16 @@ class MainUI(QtWidgets.QDialog):
         self.resetall_pushButton.clicked.connect(self.onResetAllPressed)
         self.resetselection_pushButton.clicked.connect(self.onResetSelectionPressed)
 
+    def onUseStateChange(self):
+        if self.useSelectionHiglight_RB.isChecked():
+            self.seperation_spinBox.setEnabled(False)
+            self.seperation_label.setEnabled(False)
+        else:
+            self.seperation_spinBox.setEnabled(True)
+            self.seperation_label.setEnabled(True)
+
     def onLipSynchPressed(self):
+        print self.useSelectionHiglight_RB.isChecked()
         with pm.UndoChunk():
             lipSynch(self.liptext_lineEdit.text(), self.seperation_spinBox.value())
         pass

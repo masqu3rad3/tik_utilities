@@ -9,6 +9,7 @@ import pyseq
 import subprocess
 
 import maya.cmds as cmds
+import timeit
 
 class ParticleImporter(object):
     def __init__(self):
@@ -71,6 +72,7 @@ class ParticleImporter(object):
 
         # print self.exe, source, targetPath
         subprocess.Popen([self.exe, source.path, targetPath], shell=True)
+        subprocess.check_call([self.exe, source.path, targetPath], shell=True)
         # print targetPath
 
     def run(self):
@@ -79,23 +81,18 @@ class ParticleImporter(object):
         if not theSeq:
             self.exception(title="File Error", msg="Cannot get the sequence list. Make sure the sequence numbers have enough padding")
             return
-        for x in seqList:
-            if x.contains(self.selectedFile):
-                theSeq = x
-                break
 
         particleObjName = self.uniqueName("particle1")
         cmds.particle(n=particleObjName)
         particleCacheName = "%s." %(cmds.listRelatives(particleObjName, shapes=True)[0])
 
+        start = timeit.timeit()
         for item in theSeq:
             # print item.name
             self.convertToPDC(item, customName=particleCacheName)
-        # seqList = pyseq.get_sequences(self.particleDir)
-        # for seq in seqList:
-        #     for item in seq:
-                # print item.name
-
+            print "Converted %s" %item.name
+        end = timeit.timeit()
+        print end - start
 
     def _findItem(self, itemPath, seqlist):
         for x in seqlist:

@@ -53,27 +53,53 @@ class ParticleImporter(object):
             idcounter = idcounter + 1
         return name
 
-    def convertToPDC(self, source, customName=None, fps=25):
+    # def convertToPDC(self, source, customName=None, fps=25):
+    #     """Converts the given pyseq item into pdc"""
+    #     multip = fpsDictionary[fps]
+    #     digit = int(source.digits[0])
+    #     if digit < 381:
+    #         pdcDigit = digit*multip
+    #     else:
+    #         pdcDigit = (-2144298496-multip)+((digit-380)*multip)
+    #     base = source.parts[0]
+    #
+    #     if not customName:
+    #         customName = "particleShape1."
+    #
+    #     # targetName = "{0}{1}.pdc".format(base, pdcDigit)
+    #     targetName = "{0}{1}.pdc".format(customName, pdcDigit)
+    #     targetPath = os.path.normpath(os.path.join(self.convertedDir, targetName))
+    #
+    #     # print self.exe, source, targetPath
+    #     subprocess.Popen([self.exe, source.path, targetPath], shell=True)
+    #     subprocess.check_call([self.exe, source.path, targetPath], shell=True)
+    #     # print targetPath
+
+    def convertToPDC(self, seq, customName=None, fps=25):
         """Converts the given pyseq item into pdc"""
-        multip = fpsDictionary[fps]
-        digit = int(source.digits[0])
-        if digit < 381:
-            pdcDigit = digit*multip
-        else:
-            pdcDigit = (-2144298496-multip)+((digit-380)*multip)
-        base = source.parts[0]
 
         if not customName:
             customName = "particleShape1."
+        for source in seq:
+            multip = fpsDictionary[fps]
+            digit = int(source.digits[0])
+            if digit < 381:
+                pdcDigit = digit*multip
+            else:
+                pdcDigit = (-2144298496-multip)+((digit-380)*multip)
+            base = source.parts[0]
 
-        # targetName = "{0}{1}.pdc".format(base, pdcDigit)
-        targetName = "{0}{1}.pdc".format(customName, pdcDigit)
-        targetPath = os.path.normpath(os.path.join(self.convertedDir, targetName))
 
-        # print self.exe, source, targetPath
-        subprocess.Popen([self.exe, source.path, targetPath], shell=True)
-        subprocess.check_call([self.exe, source.path, targetPath], shell=True)
-        # print targetPath
+
+            # targetName = "{0}{1}.pdc".format(base, pdcDigit)
+            targetName = "{0}{1}.pdc".format(customName, pdcDigit)
+            targetPath = os.path.normpath(os.path.join(self.convertedDir, targetName))
+
+            # print self.exe, source, targetPath
+            yield subprocess.Popen([self.exe, source.path, targetPath], shell=True)
+            # print targetPath
+            print "Converted %s" % source.name
+
 
     def run(self):
         seqList = pyseq.get_sequences(self.selectedDir)
@@ -86,13 +112,21 @@ class ParticleImporter(object):
         cmds.particle(n=particleObjName)
         particleCacheName = "%s." %(cmds.listRelatives(particleObjName, shapes=True)[0])
 
+        if not cmds.objExists('dynGlobals1'):
+            dynGlobals = cmds.createNode('dynGlobals')
+        else:
+            dynGlobals = 'dynGlobals1'
+
+
         start = timeit.timeit()
-        for item in theSeq:
-            # print item.name
-            self.convertToPDC(item, customName=particleCacheName)
-            print "Converted %s" %item.name
+        gen = self.convertToPDC(theSeq, customName=particleCacheName)
+        for x in gen:
+            gen.next()
         end = timeit.timeit()
         print end - start
+
+        cmds.setAttr('dynGlobals1.useParticleDiskCache', 1)
+        cmds.setAttr('dynGlobals1.cacheDirectory', self.basename, type='string')
 
     def _findItem(self, itemPath, seqlist):
         for x in seqlist:

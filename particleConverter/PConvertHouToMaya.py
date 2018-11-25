@@ -22,7 +22,7 @@ class ParticleImporter(object):
         self.selectedPath = cmds.fileDialog2(fileFilter=self.fileFilter, fm=1, dialogStyle=2)
         if not self.selectedPath:
             msg = "No File Selected"
-            self.exception(title="SElection Error", msg=msg)
+            self._exception(title="SElection Error", msg=msg)
             raise Exception(msg)
         else:
             self.selectedPath = self.selectedPath[0]
@@ -36,7 +36,7 @@ class ParticleImporter(object):
         self.sceneFilePath = cmds.file(q=True, sn=True)
         if self.sceneFilePath == "":
             msg = "Scene Must be saved"
-            self.exception(title="System Error", msg=msg)
+            self._exception(title="System Error", msg=msg)
             raise Exception(msg)
         self.basename = os.path.splitext(os.path.basename(self.sceneFilePath))[0]
         # print self.basename
@@ -105,12 +105,14 @@ class ParticleImporter(object):
         seqList = pyseq.get_sequences(self.selectedDir)
         theSeq =self._findItem(self.selectedFile, seqList)
         if not theSeq:
-            self.exception(title="File Error", msg="Cannot get the sequence list. Make sure the sequence numbers have enough padding")
+            self._exception(title="File Error", msg="Cannot get the sequence list. Make sure the sequence numbers have enough padding")
             return
 
         particleObjName = self.uniqueName("particle1")
         cmds.particle(n=particleObjName)
-        particleCacheName = "%s." %(cmds.listRelatives(particleObjName, shapes=True)[0])
+        particleShape = cmds.listRelatives(particleObjName, shapes=True)[0]
+        cmds.setAttr("%s.isDynamic" %particleShape, 0)
+        particleCacheName = "%s." %(particleShape)
 
         if not cmds.objExists('dynGlobals1'):
             dynGlobals = cmds.createNode('dynGlobals')
@@ -127,6 +129,7 @@ class ParticleImporter(object):
 
         cmds.setAttr('dynGlobals1.useParticleDiskCache', 1)
         cmds.setAttr('dynGlobals1.cacheDirectory', self.basename, type='string')
+        print "finished importing"
 
     def _findItem(self, itemPath, seqlist):
         for x in seqlist:

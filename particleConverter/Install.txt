@@ -1,0 +1,8 @@
+Converts bhclassic (formerly bgeo) particles into maya legacy particles
+
+Put particleConverter folder into
+user/Documents/maya/scripts folder
+
+run following commands inside maya:
+from particleConverter import PConvertHouToMaya as converter
+converter.ParticleImporter().run()

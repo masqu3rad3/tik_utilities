@@ -13,7 +13,7 @@
 ## Copy tik_cameraOverScan.py to user/maya/scripts folder
 ## Run these commands in python tab (or put them in a shelf:
 ## import tik_pathMotion
-## tik_pathMotion.pathMotion().show()
+## tik_pathMotion.PathMotion().show()
 ## Known Issues:
     # Undo is not working due to a bug with python wrapping of path animation command
 ## TODO: Right now the objects are distributed with the selection order. Random distribution will be added

@@ -1,7 +1,9 @@
 #
 # Renamer version 1.0
 
-import pymel.core as pm
+# import pymel.core as pm
+
+import maya.cmds as cmds
 
 import Qt
 from Qt import QtWidgets, QtCore, QtGui
@@ -58,22 +60,24 @@ class Renamer(object):
 
     def getObjects(self, method):
         if method == 0: # selected objects
-            self.objectList = pm.ls(sl=True)
+            # self.objectList = pm.ls(sl=True)
+            self.objectList = cmds.ls(sl=True)
         if method == 1: # Hierarchy
             self.objectList = []
-            for obj in pm.ls(sl=True):
+            for obj in cmds.ls(sl=True):
                 self.objectList.append(obj)
-                self.objectList += (pm.listRelatives(obj, ad=True, c=True))
+                self.objectList += (cmds.listRelatives(obj, ad=True, c=True))
             self.objectList = uniqueList(self.objectList)
         if method == 2: # Everything
-            self.objectList = pm.ls()
+            self.objectList = cmds.ls()
 
 
     def removePasted(self, selectMethod):
         self.getObjects(selectMethod) # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename(i.name().replace("pasted__", ""))
+                cmds.rename(i, i.replace("pasted", ""))
+                # i.rename(i.name().replace("pasted__", ""))
             except RuntimeError:
                 pass
 
@@ -81,7 +85,8 @@ class Renamer(object):
         self.getObjects(selectMethod)  # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename(i.name().split(":")[-1])
+                cmds.rename(i, i.split(":")[-1])
+                # i.rename(i.name().split(":")[-1])
             except IndexError and RuntimeError:
                 pass
 
@@ -89,7 +94,8 @@ class Renamer(object):
         self.getObjects(selectMethod)  # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename("{0}_RIGHT".format(i.name()))
+                cmds.rename(i, "{0}_RIGHT".format(i))
+                # i.rename("{0}_RIGHT".format(i.name()))
             except RuntimeError:
                 pass
 
@@ -97,7 +103,7 @@ class Renamer(object):
         self.getObjects(selectMethod)  # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename("{0}_LEFT".format(i.name()))
+                cmds.rename(i, "{0}_LEFT".format(i))
             except RuntimeError:
                 pass
 
@@ -105,7 +111,8 @@ class Renamer(object):
         self.getObjects(selectMethod)  # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename("{0}{1}".format(i.name(),suffix))
+                cmds.rename(i, "{0}{1}".format(i,suffix))
+                # i.rename("{0}{1}".format(i.name(),suffix))
             except RuntimeError:
                 pass
 
@@ -113,7 +120,8 @@ class Renamer(object):
         self.getObjects(selectMethod)  # initialize the objectList
         for i in self.objectList:
             try:
-                i.rename("{0}{1}".format(prefix, i.name()))
+                cmds.rename(i, "{0}{1}".format(prefix, i))
+                # i.rename("{0}{1}".format(prefix, i.name()))
             except RuntimeError:
                 pass
 
@@ -129,7 +137,8 @@ class Renamer(object):
         counter = 1
         for i in self.objectList:
             try:
-                i.rename("{0}{1}".format(newName, str(counter).zfill(padding)))
+                cmds.rename(i, "{0}{1}".format(newName, str(counter).zfill(padding)))
+                # i.rename("{0}{1}".format(newName, str(counter).zfill(padding)))
                 counter += 1
             except RuntimeError:
                 pass
@@ -139,8 +148,9 @@ class Renamer(object):
 
         for i in self.objectList:
             try:
-                i.name().replace(A, B)
-                i.rename(i.name().replace(A, B))
+                cmds.rename(i, i.replace(A, B))
+                # i.name().replace(A, B)
+                # i.rename(i.name().replace(A, B))
             except RuntimeError:
                 pass
 
@@ -354,30 +364,31 @@ class RenamerUI(QtWidgets.QDialog):
 
         # QtCore.QMetaObject.connectSlotsByName(namingtools_Dialog)
     def buttonPressed(self, command):
-        with pm.UndoChunk():
-            if self.selected_radioButton.isChecked():
-                method=0
-            elif self.selected_radioButton_2.isChecked():
-                method=1
-            elif self.selected_radioButton_3.isChecked():
-                method=2
+        cmds.undoInfo(openChunk=True)
+        if self.selected_radioButton.isChecked():
+            method=0
+        elif self.selected_radioButton_2.isChecked():
+            method=1
+        elif self.selected_radioButton_3.isChecked():
+            method=2
 
-            if command == "removePasted":
-                self.renamer.removePasted(method)
-            elif command == "removeSemi":
-                self.renamer.removeSemi(method)
-            elif command == "addRight":
-                self.renamer.addRight(method)
-            elif command == "addLeft":
-                self.renamer.addLeft(method)
-            elif command == "addSuffix":
-                self.renamer.addSuffix(method, self.addsuffix_lineEdit.text())
-            elif command == "addPrefix":
-                self.renamer.addPrefix(method, self.addprefix_lineEdit.text())
-            elif command == "rename":
-                self.renamer.rename(method, self.rename_lineEdit.text())
-            elif command == "replace":
-                self.renamer.replace(method, self.replace_a_lineEdit.text(), self.replace_b_lineEdit.text())
+        if command == "removePasted":
+            self.renamer.removePasted(method)
+        elif command == "removeSemi":
+            self.renamer.removeSemi(method)
+        elif command == "addRight":
+            self.renamer.addRight(method)
+        elif command == "addLeft":
+            self.renamer.addLeft(method)
+        elif command == "addSuffix":
+            self.renamer.addSuffix(method, self.addsuffix_lineEdit.text())
+        elif command == "addPrefix":
+            self.renamer.addPrefix(method, self.addprefix_lineEdit.text())
+        elif command == "rename":
+            self.renamer.rename(method, self.rename_lineEdit.text())
+        elif command == "replace":
+            self.renamer.replace(method, self.replace_a_lineEdit.text(), self.replace_b_lineEdit.text())
+        cmds.undoInfo(closeChunk=True)
 
     # def testPop(self):
     #     exportWindow, ok = QtWidgets.QInputDialog.getItem(self, 'Text Input Dialog',

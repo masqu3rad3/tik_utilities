@@ -267,8 +267,11 @@ def objectNoise(node, rotate=True, translate=True, scale=False, randomSeed=True)
 class ObjectNoiseUI(QtWidgets.QDialog):
     def __init__(self):
         for entry in QtWidgets.QApplication.allWidgets():
-            if entry.objectName() == windowName:
-                entry.close()
+            try:
+                if entry.objectName() == windowName:
+                    entry.close()
+            except (AttributeError, TypeError):
+                pass
         parent = getMayaMainWindow()
         super(ObjectNoiseUI, self).__init__(parent=parent)
 

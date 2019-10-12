@@ -78,7 +78,7 @@ class PathMotion(QtWidgets.QDialog):
             try:
                 if entry.objectName() == "pathmotion_Dialog":
                     entry.close()
-            except AttributeError:
+            except (AttributeError, TypeError):
                 pass
 
         parent = getMayaMainWindow()

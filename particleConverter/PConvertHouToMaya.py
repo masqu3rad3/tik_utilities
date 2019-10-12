@@ -15,7 +15,7 @@ class ParticleImporter(object):
     def __init__(self):
         super(ParticleImporter, self).__init__()
 
-        self.fileFilter = "*.bhclassic;;*.hclassic;;*.bgeo"
+        self.fileFilter = "*.bhclassic;;*.hclassic;;*.bgeo;;*.pda"
         self.initPaths()
 
     def initPaths(self):

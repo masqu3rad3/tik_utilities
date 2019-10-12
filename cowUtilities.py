@@ -174,7 +174,7 @@ class MainUI(QtWidgets.QDialog):
             try:
                 if entry.objectName() == windowName:
                     entry.close()
-            except AttributeError:
+            except (AttributeError, TypeError):
                 pass
         parent = getMayaMainWindow()
         super(MainUI, self).__init__(parent=parent)

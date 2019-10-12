@@ -54,7 +54,7 @@ class cameraOverscan(QtWidgets.QDialog):
             try:
                 if entry.objectName() == windowName:
                     entry.close()
-            except AttributeError:
+            except (AttributeError, TypeError):
                 pass
         parent = getMayaMainWindow()
         super(cameraOverscan, self).__init__(parent=parent)

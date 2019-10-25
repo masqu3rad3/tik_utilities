@@ -45,9 +45,90 @@ class KelebekHelper(object):
         self.follow = True
         self.parametriclength = True
         self.count = 20
-        self.referencePath = "M:\\Projects\\Kelebek_logoKelebekler_DEPO_191003\\scenes\\Rig\\test\\test_Rig_forReference.mb"
-        self.controllerName = "cont_circle1"
+        self.scale = 1.0
+        self.referencePath = "M:\\Projects\\Kelebek_logoKelebekler_DEPO_191003\\scenes\\Rig\\Kelebek_Loop\\Kelebek_Loop_Rig_forReference.mb"
+        self.proxyPath = "M:\\Projects\\Kelebek_logoKelebekler_DEPO_191003\\_TRANSFER\\OBJ\\kelebekProxy.obj"
+        self.flightController = "cont_diamond"
+        self.masterController = "cont_Master"
+        self.placementController = "cont_Placement"
+        self.previewObjects = []
+        self.previewCurve=None
+        self.randomseed = 1234
         pass
+
+    def previewModeOn(self):
+        self.previewObjects = []
+        if not self.previewCurve:
+            try:
+                curveTransform = pm.ls(sl=True)[0]
+                self.previewCurve = curveTransform
+            except IndexError:
+                pm.displayWarning("Nothing selected. Select the path curve")
+                return
+        else:
+            curveTransform = self.previewCurve
+        curveShape = curveTransform.getShape()
+        if (pm.nodeType(curveShape) != "nurbsCurve"):
+            pm.displayWarning("Selection must be a nurbs curve.")
+
+        if not pm.objExists("kelebekPrx"):
+            pm.importFile(self.proxyPath)
+        proxy = pm.PyNode("kelebekPrx")
+        pm.setAttr(proxy.v, 0)
+        # self.previewObjects.append(proxy)
+
+        if not pm.attributeQuery("drive", node=curveTransform, exists=True):
+            pm.addAttr(curveTransform, shortName="drive", longName="drive", defaultValue=0, at="float", k=True)
+
+        # get namespace
+        refFileBasename = os.path.split(self.referencePath)[1]
+        namespace = os.path.splitext(refFileBasename)[0]
+
+        for i in range(self.count):
+            # ref = pm.polyCone()[0]
+            ref = pm.duplicate(proxy)[0]
+            pm.setAttr(ref.v, 1)
+            refGrp = pm.group(ref)
+
+            # ----------------------------
+
+            locator = pm.spaceLocator(name="tmp_%s" % (i))
+            r = pm.pathAnimation(locator,
+                                 stu=i*self.seperation,
+                                 etu=self.count + i*self.seperation,
+                                 follow=self.follow,
+                                 fractionMode=self.parametriclength, c=curveTransform,
+                                 upAxis="Y",
+                                 followAxis="Z",
+                                 inverseFront=True,
+                                 )
+
+
+            rRel = pm.listConnections(r, t="animCurveTL")[0]
+            pm.setAttr(rRel.postInfinity, self.infinityDict[self.postInfinity])
+            pm.setAttr(rRel.preInfinity, self.infinityDict[self.preInfinity])
+            pm.keyTangent(rRel, itt='linear', ott='linear')
+            pm.connectAttr("%s.%s" % (curveTransform, "drive"), rRel.input)
+
+            # ------------------
+            # positioning
+            # ------------------
+            self.alignTo(refGrp, locator, mode=2)
+            pm.parentConstraint(locator, refGrp, mo=True)
+            random.seed(i+self.randomseed)
+            pm.setAttr(ref.tx, (random.random()-0.5) * self.randomRadiusX)
+            pm.setAttr(ref.ty, (random.random()-0.5) * self.randomRadiusY)
+            pm.setAttr(ref.tz, (random.random()-0.5) * self.randomRadiusZ)
+            pm.setAttr(ref.sx, self.scale)
+            pm.setAttr(ref.sy, self.scale)
+            pm.setAttr(ref.sz, self.scale)
+            # pm.parent(controller, locator)
+            self.previewObjects.append(refGrp)
+            self.previewObjects.append(locator)
+
+    def previewModeOff(self):
+        pm.delete(self.previewObjects)
+        self.previewObjects=[]
 
     def attachToPath(self):
 
@@ -68,7 +149,9 @@ class KelebekHelper(object):
 
         for i in range(self.count):
             n = (pm.createReference(self.referencePath, namespace=namespace))
-            controller = pm.PyNode("{0}:{1}".format(n.fullNamespace, self.controllerName))
+            masterController = pm.PyNode("{0}:{1}".format(n.fullNamespace, self.masterController))
+            flightController = pm.PyNode("{0}:{1}".format(n.fullNamespace, self.flightController))
+            placementController = pm.PyNode("{0}:{1}".format(n.fullNamespace, self.placementController))
             # print controller
 
             # ---------------------------
@@ -78,7 +161,7 @@ class KelebekHelper(object):
             # get first and last frames of the timeslider range
 
             # key the loop animation
-
+            pm.setAttr(flightController.timeOffset, 1000*random.random())
             # ----------------------------
 
             locator = pm.spaceLocator(name="loc_%s_%s" % (n.fullNamespace, i))
@@ -102,11 +185,22 @@ class KelebekHelper(object):
             # ------------------
             # positioning
             # ------------------
-            self.alignTo(controller.getParent(), locator, mode=2)
-            pm.parentConstraint(locator, controller.getParent(), mo=False)
-            pm.setAttr(controller.tx, (random.random()-0.5) * self.randomRadiusX)
-            pm.setAttr(controller.ty, (random.random()-0.5) * self.randomRadiusY)
-            pm.setAttr(controller.tz, (random.random()-0.5) * self.randomRadiusZ)
+            self.alignTo(masterController, locator, mode=2)
+            pm.parentConstraint(locator, masterController, mo=False)
+            random.seed(i+self.randomseed)
+            pm.setAttr(placementController.tx, (random.random()-0.5) * self.randomRadiusX)
+            pm.setAttr(placementController.ty, (random.random()-0.5) * self.randomRadiusY)
+            pm.setAttr(placementController.tz, (random.random()-0.5) * self.randomRadiusZ)
+
+            pm.setAttr(placementController.sx, self.scale)
+            pm.setAttr(placementController.sy, self.scale)
+            pm.setAttr(placementController.sz, self.scale)
+
+            if (int(i) % 2) > 0:
+                colorValue = random.randrange(1, 7)
+            else:
+                colorValue = 0
+            pm.setAttr(placementController.color, colorValue)
             # pm.parent(controller, locator)
 
     def alignTo(self, sourceObj=None, targetObj=None, mode=0, sl=False, o=(0, 0, 0)):
@@ -134,17 +228,26 @@ class KelebekHelper(object):
     def moveKeys(self, value):
         selection = pm.ls(sl=True)
         for x in selection:
-            if x.name().endswith(self.controllerName):
-                mPath = self._getMotionPath(x.getParent()) # parent node of the controller is connected to motion path
-                pm.keyframe(mPath, r=True, tc=value)
+            namespace = x.namespace()
+            masterController = pm.PyNode("{0}:{1}".format(namespace, self.masterController))
+            mPath = self._getMotionPath(masterController)  # parent node of the controller is connected to motion path
+            pm.keyframe(mPath, r=True, tc=value)
+            # if x.name().endswith(self.placementController):
+            #     mPath = self._getMotionPath(x.getParent()) # parent node of the controller is connected to motion path
+            #     pm.keyframe(mPath, r=True, tc=value)
 
     def speedChange(self, value):
         selection = pm.ls(sl=True)
         for x in selection:
-            if x.name().endswith(self.controllerName):
-                mPath = self._getMotionPath(x.getParent()) # parent node of the controller is connected to motion path
-                pm.keyframe(mPath, r=True, index=0, vc=value*-1)
-                pm.keyframe(mPath, r=True, index=1, vc=value)
+            namespace = x.namespace()
+            masterController = pm.PyNode("{0}:{1}".format(namespace, self.masterController))
+            mPath = self._getMotionPath(masterController)  # parent node of the controller is connected to motion path
+            pm.keyframe(mPath, r=True, index=0, vc=value*-1)
+            pm.keyframe(mPath, r=True, index=1, vc=value)
+            # if x.name().endswith(self.placementController):
+            #     mPath = self._getMotionPath(x.getParent()) # parent node of the controller is connected to motion path
+            #     pm.keyframe(mPath, r=True, index=0, vc=value*-1)
+            #     pm.keyframe(mPath, r=True, index=1, vc=value)
 
     def _getMotionPath(self, node):
         for x in pm.listHistory(node):
@@ -154,8 +257,19 @@ class KelebekHelper(object):
 
     def selectMotionPath(self):
         selection = pm.ls(sl=True)
-        mList = [self._getMotionPath(x.getParent()) for x in selection]
+        # mList = [self._getMotionPath(x.getParent()) for x in selection]
+        mList=[]
+        for x in selection:
+            namespace = x.namespace()
+            masterController = pm.PyNode("{0}:{1}".format(namespace, self.masterController))
+            mList.append(self._getMotionPath(masterController))
         pm.select(mList)
+
+    def selectAllDiamonds(self):
+        pm.select("*:%s" %self.flightController)
+
+    def selectAllPlacements(self):
+        pm.select("*:%s" % self.placementController)
 
 
 
@@ -179,7 +293,7 @@ class MainUI(QtWidgets.QDialog):
 
         self.setWindowTitle(windowName)
         self.setObjectName(windowName)
-        self.resize(230, 400)
+        self.resize(230, 565)
         self.buildUI()
 
     def buildUI(self):
@@ -233,8 +347,16 @@ class MainUI(QtWidgets.QDialog):
         self.verticalLayout_3.addWidget(self.multiplier_dSpn)
 
         self.selectMotionPath_pb = QtWidgets.QPushButton(self)
-        self.selectMotionPath_pb.setText("Select Motion Path")
+        self.selectMotionPath_pb.setText("Select Motion Path(s)")
         self.verticalLayout_3.addWidget(self.selectMotionPath_pb)
+
+        self.selectAllDiamonds_pb = QtWidgets.QPushButton(self)
+        self.selectAllDiamonds_pb.setText("Select All Diamonds")
+        self.verticalLayout_3.addWidget(self.selectAllDiamonds_pb)
+
+        self.selectAllPlacements_pb = QtWidgets.QPushButton(self)
+        self.selectAllPlacements_pb.setText("Select All Placements")
+        self.verticalLayout_3.addWidget(self.selectAllPlacements_pb)
 
         self.line = QtWidgets.QFrame(self)
         self.line.setLineWidth(5)
@@ -248,34 +370,47 @@ class MainUI(QtWidgets.QDialog):
         self.formLayout = QtWidgets.QFormLayout()
 
         self.count_lb = QtWidgets.QLabel(self.groupBox, text="Count:")
-        self.count_spn = QtWidgets.QSpinBox(self.groupBox)
-        self.count_spn.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.count_spn = QtWidgets.QSpinBox(self.groupBox, minimum=1, maximum=999)
+        self.count_spn.setMaximumSize(QtCore.QSize(100, 16777215))
         self.count_spn.setProperty("value", 20)
         self.formLayout.addRow(self.count_lb, self.count_spn)
 
+        self.scale_lb = QtWidgets.QLabel(self.groupBox, text="Scale:")
+        self.scale_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox, minimum=0.0, maximum=999.9)
+        self.scale_dSpn.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.scale_dSpn.setProperty("value", 1)
+        self.formLayout.addRow(self.scale_lb, self.scale_dSpn)
+
         self.seperation_lb = QtWidgets.QLabel(self.groupBox, text="Seperation:")
-        self.seperation_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox)
-        self.seperation_dSpn.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.seperation_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox, minimum=0.0, maximum=999.9)
+        self.seperation_dSpn.setMaximumSize(QtCore.QSize(100, 16777215))
         self.seperation_dSpn.setValue(1.0)
         self.formLayout.addRow(self.seperation_lb, self.seperation_dSpn)
 
         self.randX_lb = QtWidgets.QLabel(self.groupBox, text="Random Position X:")
-        self.randX_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox)
-        self.randX_dSpn.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.randX_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox, minimum=0.0, maximum=9999.9)
+        self.randX_dSpn.setMaximumSize(QtCore.QSize(100, 16777215))
         self.randX_dSpn.setValue(5.0)
         self.formLayout.addRow(self.randX_lb, self.randX_dSpn)
 
         self.randY_lb = QtWidgets.QLabel(self.groupBox, text="Random Position Y:")
-        self.randY_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox)
-        self.randY_dSpn.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.randY_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox, minimum=0.0, maximum=9999.9)
+        self.randY_dSpn.setMaximumSize(QtCore.QSize(100, 16777215))
         self.randY_dSpn.setValue(5.0)
         self.formLayout.addRow(self.randY_lb, self.randY_dSpn)
 
         self.randZ_lb = QtWidgets.QLabel(self.groupBox, text="Random Position Z:")
-        self.randZ_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox)
-        self.randZ_dSpn.setMaximumSize(QtCore.QSize(50, 16777215))
+        self.randZ_dSpn = QtWidgets.QDoubleSpinBox(self.groupBox, minimum=0.0, maximum=9999.9)
+        self.randZ_dSpn.setMaximumSize(QtCore.QSize(100, 16777215))
         self.randZ_dSpn.setValue(5.0)
         self.formLayout.addRow(self.randZ_lb, self.randZ_dSpn)
+
+        self.randomseed_lb = QtWidgets.QLabel(self.groupBox, text="Random Seed:")
+        self.randomseed_spn = QtWidgets.QSpinBox(self.groupBox, minimum=1, maximum=999999)
+        self.randomseed_spn.setMaximumSize(QtCore.QSize(100, 16777215))
+        self.randomseed_spn.setProperty("value", 1234)
+        self.formLayout.addRow(self.randomseed_lb, self.randomseed_spn)
+
 
         self.verticalLayout_4.addLayout(self.formLayout)
 
@@ -284,6 +419,11 @@ class MainUI(QtWidgets.QDialog):
         self.verticalLayout_3.addWidget(self.groupBox)
 
 
+        self.preview_pb = QtWidgets.QPushButton(self.groupBox, text="Preview")
+        self.preview_pb.setCheckable(True)
+        self.verticalLayout_4.addWidget(self.preview_pb)
+        self.verticalLayout_3.addWidget(self.groupBox)
+
         # self.attach_pb = QtWidgets.QPushButton(self)
         # self.attach_pb.setText("")
 
@@ -291,8 +431,30 @@ class MainUI(QtWidgets.QDialog):
         self.speed_dial.valueChanged.connect(self.onSlideSpeed)
         self.attachToPath_pb.clicked.connect(self.onAttachToPath)
         self.selectMotionPath_pb.clicked.connect(self.kelebekHelper.selectMotionPath)
+        self.preview_pb.clicked.connect(self.onPreview)
+
+        self.selectAllDiamonds_pb.clicked.connect(self.kelebekHelper.selectAllDiamonds)
+        self.selectAllPlacements_pb.clicked.connect(self.kelebekHelper.selectAllPlacements)
+
+        self.count_spn.valueChanged.connect(self.onPreview)
+        self.scale_dSpn.valueChanged.connect(self.onPreview)
+        self.seperation_dSpn.valueChanged.connect(self.onPreview)
+        self.randX_dSpn.valueChanged.connect(self.onPreview)
+        self.randY_dSpn.valueChanged.connect(self.onPreview)
+        self.randZ_dSpn.valueChanged.connect(self.onPreview)
+        self.randomseed_spn.valueChanged.connect(self.onPreview)
+
 
         # layout = QtWidgets.QVBoxLayout(self)
+
+    def onPreview(self):
+        self.kelebekHelper.previewModeOff()
+        if self.preview_pb.isChecked():
+            self.refreshProperties()
+            self.kelebekHelper.previewModeOn()
+        # else:
+        #     self.kelebekHelper.previewModeOff()
+
 
     def onSlidePosition(self):
         currentPosition = self.position_dial.value()
@@ -320,14 +482,27 @@ class MainUI(QtWidgets.QDialog):
         self.kelebekHelper.speedChange(val * 0.01)
         self.lastSpeed = self.speed_dial.value()
 
-    def onAttachToPath(self):
+    def refreshProperties(self):
         self.kelebekHelper.count = self.count_spn.value()
+        self.kelebekHelper.scale = self.scale_dSpn.value()
         self.kelebekHelper.seperation = self.seperation_dSpn.value()
         self.kelebekHelper.randomRadiusX = self.randX_dSpn.value()
         self.kelebekHelper.randomRadiusY = self.randY_dSpn.value()
         self.kelebekHelper.randomRadiusZ = self.randZ_dSpn.value()
+        self.kelebekHelper.randomseed = self.randomseed_spn.value()
 
+    def onAttachToPath(self):
+        # self.kelebekHelper.count = self.count_spn.value()
+        # self.kelebekHelper.seperation = self.seperation_dSpn.value()
+        # self.kelebekHelper.randomRadiusX = self.randX_dSpn.value()
+        # self.kelebekHelper.randomRadiusY = self.randY_dSpn.value()
+        # self.kelebekHelper.randomRadiusZ = self.randZ_dSpn.value()
+        self.refreshProperties()
         self.kelebekHelper.attachToPath()
+
+    def closeEvent(self, event):
+        # do stuff
+        self.kelebekHelper.previewModeOff()
 
 # testUI().show()
 

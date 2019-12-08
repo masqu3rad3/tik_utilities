@@ -26,7 +26,7 @@ def copySourceFiles(childDir=""):
         except:
             print "File Copy Error"
 
-        cmds.setAttr("%s.fileTextureName" %fileNode, newPath)
+        cmds.setAttr("%s.fileTextureName" %fileNode, newPath, type="string")
 
 
 
